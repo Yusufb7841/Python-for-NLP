@@ -129,5 +129,3 @@ The final submission should include:
 - `results/`
 - `reports/report.pdf`
 - `requirements.txt`
-
-The final submission should not include `.venv/`, cache files, private data, unnecessary course materials, raw prediction CSVs, or raw error-example Markdown files.
