@@ -14,7 +14,23 @@ GloVe-initialized embeddings, across 5 training-set sizes and 4 input lengths
 (180 training runs). Every number and figure on this page is produced by a script from
 [`results/runs.csv`](results/runs.csv).
 
-<!-- FINDINGS -->
+## Key findings
+
+- **Word order adds almost nothing here.** On the full data, the GloVe LSTM
+  (92.21 ± 0.23%), the order-blind GloVe FNN (92.02 ± 0.11%) and TF-IDF + logistic
+  regression (92.04 ± 0.07%) are within seed-to-seed noise. Seed by seed, no neural model
+  beats TF-IDF by more than 0.3 points.
+- **Pretrained embeddings matter more than architecture.** GloVe adds 1.3–1.6 points to the
+  LSTM models but only 0.4 to the FNN. With 1,000 training examples, it lifts the LSTM from
+  60.8% to 82.5%.
+- **More data narrows the gap but never reverses it.** With random embeddings, the LSTM
+  trails the FNN by 13.5 points at 1k examples and by 0.7 at 108k. With GloVe, the FNN
+  leads up to 10k examples, and beyond that the two are within 0.7 points of each other.
+- **The headline carries most of the signal.** The first 8 tokens (roughly the headline)
+  alone give 85–88% accuracy. The vanilla RNN stops improving after 32 tokens.
+- **The LSTM models take about 6× longer to train than the FNN.** On a laptop CPU,
+  TF-IDF fits in under a minute and the GloVe FNN trains in 0.6 minutes, against 3.6
+  minutes for the GloVe LSTM.
 
 ## Results
 
@@ -26,6 +42,17 @@ GloVe-initialized embeddings, across 5 training-set sizes and 4 input lengths
 </picture>
 
 <!-- BEGIN table:main -->
+| Model | Embeddings | Test accuracy (%) | Macro F1 (%) | Best epoch | CPU train time (min) | Params excl. embeddings |
+| :----------------- | :---------- | ------------: | ------------: | -----: | -----: | ----------: |
+| TF-IDF + LogReg | n/a | 92.04 ± 0.07 | 92.02 ± 0.07 | n/a | 0.9 | n/a |
+| FNN (mean-pooled) | GloVe | 92.02 ± 0.11 | 92.01 ± 0.11 | 4.3 | 0.6 | 13,444 |
+| FNN (mean-pooled) | random | 91.60 ± 0.11 | 91.59 ± 0.11 | 8.0 | 0.9 | 13,444 |
+| RNN | GloVe | 89.28 ± 0.48 | 89.26 ± 0.48 | 4.7 | 1.6 | 29,956 |
+| RNN | random | 89.09 ± 0.44 | 89.07 ± 0.45 | 8.7 | 2.5 | 29,956 |
+| LSTM | GloVe | 92.21 ± 0.23 | 92.19 ± 0.24 | 3.0 | 3.6 | 118,276 |
+| LSTM | random | 90.91 ± 0.30 | 90.90 ± 0.29 | 4.3 | 4.4 | 118,276 |
+| Attention LSTM | GloVe | 92.12 ± 0.22 | 92.11 ± 0.21 | 2.7 | 3.7 | 134,916 |
+| Attention LSTM | random | 90.55 ± 0.21 | 90.53 ± 0.19 | 3.7 | 4.3 | 134,916 |
 <!-- END table:main -->
 
 Mean ± standard deviation over 3 seeds on the full 7,600-article test set (at this test
@@ -41,7 +68,22 @@ each configuration actually ran, including the 3 early-stopping patience epochs.
 </picture>
 
 <!-- BEGIN table:learning_curve -->
+| Model | Embeddings | 1,000 | 3,000 | 10,000 | 30,000 | 108,000 (all) |
+| :----------------- | :---------- | -----: | -----: | ------: | ------: | -------: |
+| TF-IDF + LogReg | n/a | 82.5 | 86.2 | 88.6 | 90.2 | 92.0 |
+| FNN (mean-pooled) | GloVe | 85.3 | 87.7 | 89.3 | 90.7 | 92.0 |
+| FNN (mean-pooled) | random | 74.3 | 81.6 | 86.2 | 89.1 | 91.6 |
+| RNN | GloVe | 78.2 | 84.1 | 86.4 | 87.8 | 89.3 |
+| RNN | random | 43.8 | 63.9 | 78.5 | 84.2 | 89.1 |
+| LSTM | GloVe | 82.5 | 87.0 | 89.1 | 91.1 | 92.2 |
+| LSTM | random | 60.8 | 74.5 | 82.5 | 87.5 | 90.9 |
+| Attention LSTM | GloVe | 81.5 | 87.0 | 89.1 | 90.7 | 92.1 |
+| Attention LSTM | random | 62.8 | 73.6 | 81.9 | 87.1 | 90.5 |
 <!-- END table:learning_curve -->
+
+Test accuracy (%), mean over 3 seeds. With random embeddings, every neural model trails
+TF-IDF at every size, and the recurrent models need the most data to catch up. GloVe
+closes most of that gap. The GloVe FNN beats TF-IDF on every seed up to 30k examples.
 
 ### How much of each article is needed?
 
@@ -55,7 +97,19 @@ out where the signal sits, every model is retrained seeing only the first 8, 16,
 </picture>
 
 <!-- BEGIN table:sequence_length -->
+| Model | 8 tokens | 16 tokens | 32 tokens | 64 tokens |
+| :----------------- | ------: | ------: | ------: | ------: |
+| TF-IDF + LogReg | 87.8 | 90.0 | 91.7 | 92.0 |
+| FNN (mean-pooled) | 87.1 | 89.4 | 91.3 | 91.6 |
+| RNN | 85.8 | 88.3 | 89.0 | 89.1 |
+| LSTM | 85.4 | 88.5 | 90.4 | 90.9 |
+| Attention LSTM | 86.1 | 88.3 | 90.3 | 90.5 |
 <!-- END table:sequence_length -->
+
+Test accuracy (%), random-init embeddings, mean over 3 seeds. The order of the models is
+the same at every length. The LSTM gains the most from longer inputs (+5.5 points from 8
+to 64 tokens) but never catches the FNN, and the plain RNN stops improving after 32
+tokens.
 
 ### Where the models go wrong
 
@@ -67,6 +121,17 @@ out where the signal sits, every model is retrained seeing only the first 8, 16,
 Per-class F1 (%), mean over seeds:
 
 <!-- BEGIN table:per_class -->
+| Model | Embeddings | World | Sports | Business | Sci/Tech |
+| :----------------- | :---------- | -----: | ------: | --------: | --------: |
+| TF-IDF + LogReg | n/a | 92.2 | 96.6 | 89.3 | 90.0 |
+| FNN (mean-pooled) | GloVe | 92.2 | 97.1 | 88.8 | 89.9 |
+| FNN (mean-pooled) | random | 91.8 | 96.9 | 88.3 | 89.3 |
+| RNN | GloVe | 88.9 | 95.7 | 85.3 | 87.1 |
+| RNN | random | 89.4 | 95.3 | 84.9 | 86.7 |
+| LSTM | GloVe | 92.3 | 97.3 | 89.0 | 90.1 |
+| LSTM | random | 91.3 | 96.1 | 87.8 | 88.5 |
+| Attention LSTM | GloVe | 92.4 | 97.2 | 88.9 | 89.8 |
+| Attention LSTM | random | 90.9 | 95.7 | 87.2 | 88.4 |
 <!-- END table:per_class -->
 
 ### What does the attention layer look at?
@@ -86,12 +151,24 @@ weights show where the model pools information, not which word caused the predic
 ### Training cost
 
 Seconds per training epoch over the full 108k-example training split, measured one model
-at a time on an Apple M2 laptop (8 cores, 16 GB, PyTorch 2.15):
+at a time on an otherwise idle Apple M2 laptop (8 cores, 16 GB, PyTorch 2.15 with its
+default 4 CPU threads):
 
 <!-- BEGIN table:timing -->
+| Model | CPU s/epoch | MPS s/epoch |
+| :----------------- | -------: | -------: |
+| FNN (mean-pooled) | 5.1 | 6.2 |
+| RNN | 12.8 | 28.2 |
+| LSTM | 35.9 | 18.6 |
+| Attention LSTM | 39.1 | 21.1 |
+
+TF-IDF + LogReg: 56 s for a full CPU fit (including the C search).
 <!-- END table:timing -->
 
-<!-- TIMING -->
+On the CPU, cost follows model complexity. On Apple's MPS backend, the LSTM runs about
+twice as fast as on the CPU and the plain RNN about twice as slow, so the RNN ends up
+slower than the LSTM. The original version of this project reported that ordering as a
+property of the models, but it is a property of the backend.
 
 ## Method
 
@@ -117,8 +194,9 @@ make test         # unit tests, synthetic data only, ~5 s
 make results      # GloVe download, all 180 runs, timing benchmark, figures, tables, PDF
 ```
 
-`make results` takes about 2.5 hours on an Apple M2. The sweep is resumable: finished
-runs are recorded in `results/runs.csv` and skipped on restart. Individual steps:
+The 180 runs add up to about 4.5 hours of training on an Apple M2 (measured with three
+workers sharing the machine, see below). The sweep is resumable: finished runs are
+recorded in `results/runs.csv` and skipped on restart. Individual steps:
 
 ```bash
 python -m agnews.experiments --suites main --seeds 0      # one suite / seed

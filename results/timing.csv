@@ -1,0 +1,10 @@
+model,device,seconds,unit,platform,torch,cpu_threads
+tfidf,cpu,56.06694745901041,full fit incl. C search,macOS-27.2-arm64-arm-64bit-Mach-O,2.15.0,4
+fnn,cpu,5.074569453526055,epoch,macOS-27.2-arm64-arm-64bit-Mach-O,2.15.0,4
+rnn,cpu,12.835383973078569,epoch,macOS-27.2-arm64-arm-64bit-Mach-O,2.15.0,4
+lstm,cpu,35.910011021490206,epoch,macOS-27.2-arm64-arm-64bit-Mach-O,2.15.0,4
+attention,cpu,39.082782825047616,epoch,macOS-27.2-arm64-arm-64bit-Mach-O,2.15.0,4
+fnn,mps,6.158115223213099,epoch,macOS-27.2-arm64-arm-64bit-Mach-O,2.15.0,4
+rnn,mps,28.169107424950926,epoch,macOS-27.2-arm64-arm-64bit-Mach-O,2.15.0,4
+lstm,mps,18.620839348150184,epoch,macOS-27.2-arm64-arm-64bit-Mach-O,2.15.0,4
+attention,mps,21.07798470002599,epoch,macOS-27.2-arm64-arm-64bit-Mach-O,2.15.0,4

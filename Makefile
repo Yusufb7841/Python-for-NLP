@@ -24,7 +24,10 @@ summary:          ## tables -> results/summary.md, README.md, reports/report.md
 	$(PY) -m agnews.summary --readme reports/report.md
 
 report: summary   ## reports/report.pdf (needs pandoc + xelatex)
-	cd reports && pandoc report.md -o report.pdf --pdf-engine=xelatex --citeproc --bibliography=references.bib --resource-path=..
+	# drop the table markers first: a comment between a table and its caption detaches the caption
+	cd reports && grep -v -E '^<!-- (BEGIN|END) table:' report.md \
+		| pandoc -f markdown -o report.pdf --pdf-engine=xelatex --citeproc \
+			--bibliography=references.bib --lua-filter=keep-together.lua --resource-path=..
 
 results: experiments benchmark figures report
 

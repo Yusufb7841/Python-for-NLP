@@ -1,6 +1,6 @@
 """Aggregate results/runs.csv into mean ± std tables. Writes results/summary.md and refreshes
 the tables embedded in README.md between `<!-- BEGIN table:NAME -->` / `<!-- END ... -->`
-markers, so no number in the write-up is typed by hand.
+markers, so no table in the write-up is typed by hand.
 
     python -m agnews.summary
 """
@@ -82,10 +82,21 @@ NUMERIC_CELL = re.compile(r"^(?:[\d.,± ]+|n/a|)$")
 
 
 def markdown(frame):
-    """Pipe table; text columns left-aligned, numeric columns right-aligned."""
+    """Pipe table; text columns left-aligned, numeric columns right-aligned. Separator dashes
+    are sized to each column's content, since pandoc derives PDF column widths from them."""
     numeric = [all(NUMERIC_CELL.match(str(v)) for v in frame[c]) for c in frame.columns]
+    widths = [
+        max([len(str(v)) for v in frame[c]] + [len(word) for word in str(c).split()])
+        for c in frame.columns
+    ]
     header = "| " + " | ".join(frame.columns) + " |"
-    align = "| " + " | ".join("--:" if n else ":--" for n in numeric) + " |"
+    align = (
+        "| "
+        + " | ".join(
+            "-" * w + ":" if n else ":" + "-" * w for n, w in zip(numeric, widths, strict=True)
+        )
+        + " |"
+    )
     rows = ["| " + " | ".join(str(v) for v in row) + " |" for row in frame.itertuples(index=False)]
     return "\n".join([header, align, *rows])
 

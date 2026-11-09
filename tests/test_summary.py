@@ -12,7 +12,7 @@ def test_inject_tables_fills_empty_and_replaces_existing_blocks():
 
 def test_markdown_aligns_text_left_and_numbers_right():
     table = markdown(pd.DataFrame({"Model": ["FNN"], "Acc": ["91.5 ± 0.1"], "Note": ["n/a"]}))
-    assert table.splitlines()[1] == "| :-- | --: | --: |"
+    assert table.splitlines()[1] == "| :----- | ----------: | ----: |"
 
 
 def test_pct_formats_mean_and_optional_std():
