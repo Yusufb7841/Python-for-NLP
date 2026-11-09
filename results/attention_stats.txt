@@ -1,0 +1,2 @@
+glove embeddings, seed 0 (test accuracy 91.88%): attention mass on the first 8 tokens 19.3%, on the last 8 tokens 24.7%; uniform attention would give 22.4% to each.
+random embeddings, seed 0 (test accuracy 90.33%): attention mass on the first 8 tokens 15.2%, on the last 8 tokens 24.8%; uniform attention would give 22.4% to each.
