@@ -1,64 +1,35 @@
-# Does word order matter for news topic classification?
+# Does word order matter for news classification?
 
-[![CI](https://github.com/Yusufb7841/Python-for-NLP/actions/workflows/ci.yml/badge.svg)](https://github.com/Yusufb7841/Python-for-NLP/actions/workflows/ci.yml)
+[![CI](https://github.com/Yusufb7841/word-order-text-classification/actions/workflows/ci.yml/badge.svg)](https://github.com/Yusufb7841/word-order-text-classification/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/python-3.10%2B-blue)
 ![PyTorch](https://img.shields.io/badge/PyTorch-2.x-ee4c2c)
+[![Report](https://img.shields.io/badge/report-PDF-informational)](reports/report.pdf)
 
-A controlled comparison of four neural text classifiers — a mean-pooled embedding **FNN**
-that ignores word order, a vanilla **RNN**, an **LSTM**, and an **LSTM with attention** —
-against a classic **TF-IDF + logistic regression** baseline on the AG News topic
-classification benchmark (4 classes, 120k training / 7.6k test articles).
-
-Every configuration is trained with 3 seeds on the full dataset, with random and
-GloVe-initialized embeddings, across 5 training-set sizes and 4 input lengths
-(180 training runs). Every number and figure on this page is produced by a script from
-[`results/runs.csv`](results/runs.csv).
-
-## Key findings
-
-- **Word order adds almost nothing here.** On the full data, the GloVe LSTM
-  (92.21 ± 0.23%), the order-blind GloVe FNN (92.02 ± 0.11%) and TF-IDF + logistic
-  regression (92.04 ± 0.07%) are within seed-to-seed noise. Seed by seed, no neural model
-  beats TF-IDF by more than 0.3 points.
-- **Pretrained embeddings matter more than architecture.** GloVe adds 1.3–1.6 points to the
-  LSTM models but only 0.4 to the FNN. With 1,000 training examples, it lifts the LSTM from
-  60.8% to 82.5%.
-- **More data narrows the gap but never reverses it.** With random embeddings, the LSTM
-  trails the FNN by 13.5 points at 1k examples and by 0.7 at 108k. With GloVe, the FNN
-  leads up to 10k examples, and beyond that the two are within 0.7 points of each other.
-- **The headline carries most of the signal.** The first 8 tokens (roughly the headline)
-  alone give 85–88% accuracy. The vanilla RNN stops improving after 32 tokens.
-- **The LSTM models take about 6× longer to train than the FNN.** On a laptop CPU,
-  TF-IDF fits in under a minute and the GloVe FNN trains in 0.6 minutes, against 3.6
-  minutes for the GloVe LSTM.
-
-## Results
-
-### Main comparison
+RNNs and LSTMs were built to read text in order. Do they need that to sort news into
+topics? This project pits four neural models, from an order-blind bag of embeddings to an
+attention LSTM, against a TF-IDF baseline on AG News, in 180 training runs with three seeds
+each. **Short answer: not here.** A model that ignores word order matches the LSTM at a
+sixth of the training cost.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="results/figures/main_results-dark.png">
   <img alt="Test accuracy and estimated CPU training time per model" src="results/figures/main_results.png">
 </picture>
 
-<!-- BEGIN table:main -->
-| Model | Embeddings | Test accuracy (%) | Macro F1 (%) | Best epoch | CPU train time (min) | Params excl. embeddings |
-| :----------------- | :---------- | ------------: | ------------: | -----: | -----: | ----------: |
-| TF-IDF + LogReg | n/a | 92.04 ± 0.07 | 92.02 ± 0.07 | n/a | 0.9 | n/a |
-| FNN (mean-pooled) | GloVe | 92.02 ± 0.11 | 92.01 ± 0.11 | 4.3 | 0.6 | 13,444 |
-| FNN (mean-pooled) | random | 91.60 ± 0.11 | 91.59 ± 0.11 | 8.0 | 0.9 | 13,444 |
-| RNN | GloVe | 89.28 ± 0.48 | 89.26 ± 0.48 | 4.7 | 1.6 | 29,956 |
-| RNN | random | 89.09 ± 0.44 | 89.07 ± 0.45 | 8.7 | 2.5 | 29,956 |
-| LSTM | GloVe | 92.21 ± 0.23 | 92.19 ± 0.24 | 3.0 | 3.6 | 118,276 |
-| LSTM | random | 90.91 ± 0.30 | 90.90 ± 0.29 | 4.3 | 4.4 | 118,276 |
-| Attention LSTM | GloVe | 92.12 ± 0.22 | 92.11 ± 0.21 | 2.7 | 3.7 | 134,916 |
-| Attention LSTM | random | 90.55 ± 0.21 | 90.53 ± 0.19 | 3.7 | 4.3 | 134,916 |
-<!-- END table:main -->
+## Key findings
 
-Mean ± standard deviation over 3 seeds on the full 7,600-article test set (at this test
-size, one standard error of an accuracy near 92% is about 0.3 points). *CPU train time* is
-the controlled per-epoch time from the timing benchmark multiplied by the number of epochs
-each configuration actually ran, including the 3 early-stopping patience epochs.
+- **Word order barely helps.** The GloVe LSTM (92.2%), an order-blind FNN (92.0%) and
+  TF-IDF + logistic regression (92.0%) are tied within seed-to-seed noise.
+- **Pretrained embeddings matter more than architecture.** With 1,000 training examples,
+  GloVe lifts the LSTM from 60.8% to 82.5%.
+- **The headline is enough.** The first 8 tokens alone give 85–88% accuracy.
+- **The LSTMs cost about 6× more to train** than the FNN (with GloVe), for no gain in
+  accuracy.
+
+The [full write-up (PDF)](reports/report.pdf) covers the method, every result and the
+limitations.
+
+## More results
 
 ### Do the sequence models just need more data?
 
@@ -66,6 +37,13 @@ each configuration actually ran, including the 3 early-stopping patience epochs.
   <source media="(prefers-color-scheme: dark)" srcset="results/figures/learning_curve-dark.png">
   <img alt="Test accuracy versus number of training examples" src="results/figures/learning_curve.png">
 </picture>
+
+With little data, the order-blind FNN wins clearly: at 1,000 examples the GloVe FNN reaches
+85.3%, against 82.5% for both TF-IDF and the GloVe LSTM. With GloVe, the LSTM catches up
+from about 30,000 examples; with random embeddings it still trails the FNN on the full data.
+
+<details>
+<summary>Table: accuracy by training-set size</summary>
 
 <!-- BEGIN table:learning_curve -->
 | Model | Embeddings | 1,000 | 3,000 | 10,000 | 30,000 | 108,000 (all) |
@@ -81,20 +59,23 @@ each configuration actually ran, including the 3 early-stopping patience epochs.
 | Attention LSTM | random | 62.8 | 73.6 | 81.9 | 87.1 | 90.5 |
 <!-- END table:learning_curve -->
 
-Test accuracy (%), mean over 3 seeds. With random embeddings, every neural model trails
-TF-IDF at every size, and the recurrent models need the most data to catch up. GloVe
-closes most of that gap. The GloVe FNN beats TF-IDF on every seed up to 30k examples.
+Test accuracy (%), mean over 3 seeds.
+
+</details>
 
 ### How much of each article is needed?
-
-AG News articles are short: a median of 38 tokens, with only 2% longer than 64. To find
-out where the signal sits, every model is retrained seeing only the first 8, 16, 32 or
-64 tokens.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="results/figures/sequence_length-dark.png">
   <img alt="Test accuracy versus number of tokens kept per article" src="results/figures/sequence_length.png">
 </picture>
+
+Every model is retrained on only the first 8, 16, 32 or 64 tokens. The first 8, roughly
+the headline, already give 85–88%, and the ranking of the models is the same at every
+length.
+
+<details>
+<summary>Table: accuracy by input length</summary>
 
 <!-- BEGIN table:sequence_length -->
 | Model | 8 tokens | 16 tokens | 32 tokens | 64 tokens |
@@ -106,19 +87,84 @@ out where the signal sits, every model is retrained seeing only the first 8, 16,
 | Attention LSTM | 86.1 | 88.3 | 90.3 | 90.5 |
 <!-- END table:sequence_length -->
 
-Test accuracy (%), random-init embeddings, mean over 3 seeds. The order of the models is
-the same at every length. The LSTM gains the most from longer inputs (+5.5 points from 8
-to 64 tokens) but never catches the FNN, and the plain RNN stops improving after 32
-tokens.
+Test accuracy (%), random-init embeddings, mean over 3 seeds. Articles have a median of
+38 tokens; only 2% are longer than 64.
 
-### Where the models go wrong
+</details>
+
+### What does the attention layer look at?
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="results/figures/attention_examples-dark.png">
+  <img alt="Test articles with each token shaded by its attention weight" src="results/figures/attention_examples.png">
+</picture>
+
+The weights often land on topical words (*phelps*, *medal*, *phishing*, *fraud*). Each
+LSTM state has already read everything to its left, though, so they show where the model
+pools information, not which word decided the prediction.
+
+## Quick start
+
+```bash
+git clone https://github.com/Yusufb7841/word-order-text-classification.git && cd word-order-text-classification
+make setup     # .venv with pinned dependencies
+make test      # unit tests on synthetic data, ~5 s
+make results   # GloVe download, all 180 runs, timing benchmark, figures, tables, PDF
+```
+
+The full sweep is about 4.5 hours of training on an Apple M2 laptop. It is resumable:
+finished runs are recorded in `results/runs.csv` and skipped on restart.
+
+## Details
+
+<details>
+<summary><b>Full results table and training cost</b></summary>
+
+<!-- BEGIN table:main -->
+| Model | Embeddings | Test accuracy (%) | Macro F1 (%) | Best epoch | CPU train time (min) | Params excl. embeddings |
+| :----------------- | :---------- | ------------: | ------------: | -----: | -----: | ----------: |
+| TF-IDF + LogReg | n/a | 92.04 ± 0.07 | 92.02 ± 0.07 | n/a | 0.9 | n/a |
+| FNN (mean-pooled) | GloVe | 92.02 ± 0.11 | 92.01 ± 0.11 | 4.3 | 0.6 | 13,444 |
+| FNN (mean-pooled) | random | 91.60 ± 0.11 | 91.59 ± 0.11 | 8.0 | 0.9 | 13,444 |
+| RNN | GloVe | 89.28 ± 0.48 | 89.26 ± 0.48 | 4.7 | 1.6 | 29,956 |
+| RNN | random | 89.09 ± 0.44 | 89.07 ± 0.45 | 8.7 | 2.5 | 29,956 |
+| LSTM | GloVe | 92.21 ± 0.23 | 92.19 ± 0.24 | 3.0 | 3.6 | 118,276 |
+| LSTM | random | 90.91 ± 0.30 | 90.90 ± 0.29 | 4.3 | 4.4 | 118,276 |
+| Attention LSTM | GloVe | 92.12 ± 0.22 | 92.11 ± 0.21 | 2.7 | 3.7 | 134,916 |
+| Attention LSTM | random | 90.55 ± 0.21 | 90.53 ± 0.19 | 3.7 | 4.3 | 134,916 |
+<!-- END table:main -->
+
+Mean ± standard deviation over 3 seeds on the full 7,600-article test set (one standard
+error of an accuracy near 92% is about 0.3 points). *CPU train time* is the controlled
+per-epoch time below multiplied by the epochs each configuration actually ran.
+
+Seconds per epoch over the full 108k-example training split, one model at a time on an
+otherwise idle Apple M2 (8 cores, 16 GB, PyTorch 2.15, default 4 CPU threads):
+
+<!-- BEGIN table:timing -->
+| Model | CPU s/epoch | MPS s/epoch |
+| :----------------- | -------: | -------: |
+| FNN (mean-pooled) | 5.1 | 6.2 |
+| RNN | 12.8 | 28.2 |
+| LSTM | 35.9 | 18.6 |
+| Attention LSTM | 39.1 | 21.1 |
+
+TF-IDF + LogReg: 56 s for a full CPU fit (including the C search).
+<!-- END table:timing -->
+
+On Apple's MPS backend the LSTM runs about twice as fast as on the CPU and the plain RNN
+about twice as slow. The original version of this project reported "the RNN is slower than
+the LSTM" as a property of the models; it is a property of the backend.
+
+</details>
+
+<details>
+<summary><b>Per-class F1 and confusion matrices</b></summary>
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="results/figures/confusion_matrices-dark.png">
   <img alt="Row-normalized confusion matrices for each model" src="results/figures/confusion_matrices.png">
 </picture>
-
-Per-class F1 (%), mean over seeds:
 
 <!-- BEGIN table:per_class -->
 | Model | Embeddings | World | Sports | Business | Sci/Tech |
@@ -134,43 +180,12 @@ Per-class F1 (%), mean over seeds:
 | Attention LSTM | random | 90.9 | 95.7 | 87.2 | 88.4 |
 <!-- END table:per_class -->
 
-### What does the attention layer look at?
+Per-class F1 (%), mean over seeds.
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="results/figures/attention_examples-dark.png">
-  <img alt="Test articles with each token shaded by its attention weight" src="results/figures/attention_examples.png">
-</picture>
+</details>
 
-The weights often land on topical words (*phelps*, *medal*, *phishing*, *fraud*). But
-across the test set, the GloVe model puts 19.3% of its attention on the first 8 tokens
-(roughly the headline) and 24.7% on the last 8, where uniform attention would give 22.4%
-to each ([`results/attention_stats.txt`](results/attention_stats.txt)). Each LSTM state
-summarizes everything to its left, so late states have already read the headline. The
-weights show where the model pools information, not which word caused the prediction.
-
-### Training cost
-
-Seconds per training epoch over the full 108k-example training split, measured one model
-at a time on an otherwise idle Apple M2 laptop (8 cores, 16 GB, PyTorch 2.15 with its
-default 4 CPU threads):
-
-<!-- BEGIN table:timing -->
-| Model | CPU s/epoch | MPS s/epoch |
-| :----------------- | -------: | -------: |
-| FNN (mean-pooled) | 5.1 | 6.2 |
-| RNN | 12.8 | 28.2 |
-| LSTM | 35.9 | 18.6 |
-| Attention LSTM | 39.1 | 21.1 |
-
-TF-IDF + LogReg: 56 s for a full CPU fit (including the C search).
-<!-- END table:timing -->
-
-On the CPU, cost follows model complexity. On Apple's MPS backend, the LSTM runs about
-twice as fast as on the CPU and the plain RNN about twice as slow, so the RNN ends up
-slower than the LSTM. The original version of this project reported that ordering as a
-property of the models, but it is a property of the backend.
-
-## Method
+<details>
+<summary><b>Method</b></summary>
 
 | | |
 |:--|:--|
@@ -185,18 +200,10 @@ property of the models, but it is a property of the backend.
 Hyperparameters are shared by every model (see [`src/agnews/config.py`](src/agnews/config.py))
 and were not tuned per model.
 
-## Reproducing
+</details>
 
-```bash
-git clone https://github.com/Yusufb7841/Python-for-NLP.git && cd Python-for-NLP
-make setup        # .venv with pinned dependencies (or: pip install -r requirements.txt)
-make test         # unit tests, synthetic data only, ~5 s
-make results      # GloVe download, all 180 runs, timing benchmark, figures, tables, PDF
-```
-
-The 180 runs add up to about 4.5 hours of training on an Apple M2 (measured with three
-workers sharing the machine, see below). The sweep is resumable: finished runs are
-recorded in `results/runs.csv` and skipped on restart. Individual steps:
+<details>
+<summary><b>Running parts of the sweep</b></summary>
 
 ```bash
 python -m agnews.experiments --suites main --seeds 0      # one suite / seed
@@ -212,7 +219,10 @@ the results file are locked). The results here came from three workers on one la
 with LSTM-based models mostly on Apple's MPS backend and everything else on CPU; the
 device used for each run is recorded in `results/runs.csv`.
 
-## Project structure
+</details>
+
+<details>
+<summary><b>Project structure</b></summary>
 
 ```
 src/agnews/
@@ -230,12 +240,14 @@ tests/              pytest suite (runs in CI on every push)
 reports/            write-up (report.md -> report.pdf)
 ```
 
-## What changed from the original version
+</details>
+
+<details>
+<summary><b>What changed from the original course version</b></summary>
 
 This project started as a course assignment built in about three hours
-([original version](https://github.com/Yusufb7841/Python-for-NLP/tree/v1.0-course)).
-Reviewing it afterwards turned up problems that changed its conclusions, so it was
-rebuilt:
+([original version](https://github.com/Yusufb7841/word-order-text-classification/tree/v1.0-course)). Reviewing it afterwards turned up problems
+that changed its conclusions, so it was rebuilt:
 
 | v1 (course submission) | v2 (this version) |
 |:--|:--|
@@ -249,20 +261,22 @@ rebuilt:
 | No baseline outside the four neural models | TF-IDF + logistic regression and GloVe embeddings |
 | No tests, hand-run commands | pytest + CI, one-command reproduction |
 
-## Limitations
+</details>
 
-- **Single dataset.** AG News is a topic task with strong keyword cues, so the conclusions
-  are not expected to transfer to tasks where word order carries meaning (negation,
-  sentiment, entailment).
-- **Fixed hyperparameters.** All models share one configuration. A per-model search might
-  narrow or widen the gaps, though the gaps are small either way.
-- **No pretrained Transformer.** A fine-tuned BERT-style model would be the natural
-  upper bound (about 95% on AG News in published results) and the obvious next step.
-- **Attention is not explanation.** The attention weights apply to LSTM states that already
-  mix in earlier words, so the heatmaps show where the model pools information, not which
-  word caused a decision.
+<details>
+<summary><b>Limitations</b></summary>
 
-## References
+- **One dataset.** AG News is a topic task with strong keyword cues. The conclusions are
+  not expected to carry over to tasks where word order carries meaning, such as negation,
+  sentiment or entailment.
+- **Shared hyperparameters.** All models use one configuration, not tuned per model.
+- **No pretrained Transformer.** A fine-tuned BERT-style model (about 95% on AG News in
+  published results) would be the natural upper bound and next step.
+
+</details>
+
+<details>
+<summary><b>References</b></summary>
 
 - Zhang, Zhao & LeCun (2015). *Character-level Convolutional Networks for Text Classification.* NeurIPS. (AG News benchmark)
 - Pennington, Socher & Manning (2014). *GloVe: Global Vectors for Word Representation.* EMNLP.
@@ -271,4 +285,4 @@ rebuilt:
 - Joulin et al. (2017). *Bag of Tricks for Efficient Text Classification.* EACL. (fastText)
 - Jain & Wallace (2019). *Attention is not Explanation.* NAACL.
 
-The full write-up is in [`reports/report.pdf`](reports/report.pdf).
+</details>

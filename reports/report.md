@@ -375,7 +375,7 @@ comparisons, the differences among the strongest models are within the noise.
 # Reproducibility
 
 Code, results and instructions are at
-<https://github.com/Yusufb7841/Python-for-NLP>. `make results` reruns every experiment,
+<https://github.com/Yusufb7841/word-order-text-classification>. `make results` reruns every experiment,
 regenerates every figure and table, and rebuilds this PDF. Unit tests run in continuous
 integration on every push.
 
@@ -409,11 +409,17 @@ edition was rebuilt to fix them:
 
 # AI assistance
 
-Version 1 of this project was developed with the help of ChatGPT and OpenAI Codex. This
-revised edition was developed with the help of Claude Code, which was used to review the
-original code and results, restructure and test the codebase, run the experiments and draft
-the text. I reviewed the code, checked the reported numbers against the saved results and
-remain responsible for the content.
+I built version 1 as a course project with the assistance of AI tools (ChatGPT and OpenAI
+Codex), which helped with planning, coding, debugging and drafting parts of the report.
+
+For this edition I went back to fix what the original got wrong and turn it into a rigorous
+experiment. I set the scope: the full dataset with three seeds, a learning curve, a
+corrected input-length test, a TF-IDF baseline, GloVe embeddings, attention
+visualizations, automated tests and a new report. Claude Code carried out the
+implementation: it audited the original code and results, restructured and tested the
+codebase, ran the experiments and drafted the text. I directed the work, reviewed the code
+and the write-up, and checked the reported numbers against the saved results. The
+conclusions, and any errors, are mine.
 
 # References
 
