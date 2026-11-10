@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+.pytest_cache/
+.ruff_cache/
+
+# GloVe vectors (download with: python -m agnews.embeddings)
+data/
+# Model checkpoints and logs
+artifacts/
+
+# OS
+.DS_Store
+
+# IDE
+.idea/
+.vscode/
